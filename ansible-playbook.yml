@@ -1,0 +1,12 @@
+- hosts: all
+  become: no
+  tasks:
+    - name: Grzegorz Brzęczyszczykiewicz
+      shell: 'ls -l'
+      shell: 'echo "xd"'
+      register: command_output
+    - debug:
+        var: command_output.stdout_lines
+    - name: pingerando
+      ansible.builtin.ping:
+
