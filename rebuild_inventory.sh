@@ -1,10 +1,20 @@
-PUBLIC_IPS=$(gcloud compute instances list --format="value(networkInterfaces[0].networkIP,networkInterfaces[0].accessConfigs[0].natIP)" \
-    | sort | awk '{ print $2 }' | grep -P '\S')
+#!/bin/bash
 
-echo "all:" > ansible-inv.yml
-echo "    hosts:" >> ansible-inv.yml
+source ./get_machines.sh
 
-echo "$PUBLIC_IPS" | while read IP
+inventory_filename="${1:-ansible-inv.yml}"
+
+declare -A machines
+get_machines "heroic-oarlock-329616" machines
+
+echo "all:" > "$inventory_filename"
+echo "    hosts:" >> "$inventory_filename"
+
+for i in $(seq 1 ${machines[count]})
 do
-    echo "        $IP:" >> ansible-inv.yml
+    if [[ "${machines["$i,external_ip"]}" != "" ]]
+    then
+        echo "        ${machines["$i,name"]}:" >> "$inventory_filename"
+        echo "            ansible_host: ${machines["$i,external_ip"]}" >> "$inventory_filename"
+    fi
 done
