@@ -1,0 +1,6 @@
+all:
+    vars:
+        db_user: pc
+        db_pass: pc
+        db_name: petclinic
+        db_port: 30603

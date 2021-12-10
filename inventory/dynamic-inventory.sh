@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Fill an associative array with informations about machines of specified project
 get_machines () {
     # Pull the information
     local IFS=""
@@ -52,18 +51,40 @@ get_machines () {
     done
 }
 
-# Examples
+declare -A machines
+get_machines "heroic-oarlock-329616" machines
 
-# Call
-#declare -A machines
-#get_machines "heroic-oarlock-329616" machines
-
-# Get values
-#i=1
-#echo ${machines["$i,name"]}
-#echo ${machines["2,name"]}
-#echo ${machines["3,name"]}
-#echo ${machines["$i,status"]}
-#echo ${machines["2,internal_ip"]}
-#echo ${machines["3,zone"]}
-#echo ${machines[count]}
+if [ "$1" == '--list' ]
+then
+    echo -n '{ "_meta": { "hostvars": '
+    use_comma=""
+    for i in $(seq 1 ${machines[count]})
+    do
+        if [[ "${machines["$i,external_ip"]}" != "" ]]
+        then
+            echo -n "${use_comma:+, }{ \"${machines["$i,name"]}\": { \"ansible_host\": \"${machines["$i,external_ip"]}\" }"
+            use_comma="true"
+        fi
+    done
+    echo -n ' } }, "all": { "children": [ "ungrouped" ] }, "ungrouped": { "hosts": [ '
+    use_comma=""
+    for i in $(seq 1 ${machines[count]})
+    do
+        if [[ "${machines["$i,external_ip"]}" != "" ]]
+        then
+            echo -n "${use_comma:+, }\"${machines["$i,name"]}\""
+            use_comma="true"
+        fi
+    done
+    echo ' ] } }'
+elif [ "$1" == '--host' ]; then
+    for i in $(seq 1 ${machines[count]})
+    do
+        if [[ "${machines["$i,name"]}" = "$2" ]] && [[ "${machines["$i,external_ip"]}" != "" ]]
+        then
+            echo "{ \"ansible_host\": \"${machines["$i,external_ip"]}\" }"
+        fi
+    done
+else
+  echo '{}'
+fi
