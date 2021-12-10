@@ -1,0 +1,18 @@
+- hosts: all
+  become: no
+  tasks:
+    - name: Remove mysql
+      become: yes
+      apt:
+        name: mysql-server
+        state: absent
+        purge: yes
+        autoremove: yes
+    - name: Remove mysql init script
+      file:
+        path: ./initDB.sql
+        state: absent
+    - name: Remove mysql data script
+      file:
+        path: ./populateDB.sql
+        state: absent

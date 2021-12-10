@@ -1,4 +1,0 @@
-all:
-    hosts:
-        spring-petclinic-angular:
-            ansible_host: 34.118.7.28
