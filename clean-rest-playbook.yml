@@ -1,0 +1,33 @@
+- hosts: all
+  become: no
+  tasks:
+    - name: Kill all active Java processes
+      become: yes
+      ignore_errors: yes
+      command:
+        cmd: killall java
+    - name: Remove git
+      become: yes
+      apt:
+        name: git
+        state: absent
+        purge: yes
+        autoremove: yes
+    - name: Remove JDK
+      become: yes
+      apt:
+        name: openjdk-8-jdk
+        state: absent
+        purge: yes
+        autoremove: yes
+    - name: Remove JRE
+      become: yes
+      apt:
+        name: openjdk-8-jre
+        state: absent
+        purge: yes
+        autoremove: yes
+    - name: Remove cloned repository dir
+      file:
+        path: ./rest
+        state: absent
