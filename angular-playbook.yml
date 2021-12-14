@@ -9,14 +9,19 @@
           - git
           - nginx
         update_cache: yes
-    # Download repo
+    # Download repository
     - name: Download frontend from repository
-      become: no
       git:
         dest: angular
         repo: https://github.com/spring-petclinic/spring-petclinic-angular.git
         clone: yes
         force: yes
+    # Configure repository
+    - name: Configure REST address
+      lineinfile:
+        dest: ./angular/src/environments/environment.prod.ts
+        regexp: "^\\s*REST_API_URL: 'http:\\/\\/localhost:9966\\/petclinic\\/api\\/"
+        line: "REST_API_URL: 'http://{{nginx_host}}:{{nginx_port}}'"
     # NodeJS and NPM
     - name: Update nodejs information
       become: yes
@@ -29,18 +34,17 @@
         name:
           - nodejs
     - name: Install npm packages
-      become: yes
       shell:
         cmd: npm install --no-audit
         chdir: angular
     - name: Install npm angular
       become: yes
-      shell: npm install -g --no-audit @angular/cli
+      shell: npm install -g --no-audit @angular/cli@11.2.11
     # Build angular
     - name: Build frontend
-      become: no
+      become: yes
       shell:
-        cmd: ng build --prod --base-href=/petclinic/ --deploy-url=/petclinic/
+        cmd: ng build --prod --base-href=/petclinic/ --output-path=/var/www/html/petclinic/
         chdir: angular
     # Setup Nginx
     - name: Configure nginx proxy port 1/2
@@ -60,4 +64,4 @@
       become: yes
       service:
         name: nginx
-        state: restart
+        state: restarted
