@@ -31,15 +31,17 @@
     - name: Install nodejs, npm
       become: yes
       apt:
-        name:
-          - nodejs
+        name: nodejs
+        state: latest
     - name: Install npm packages
-      shell:
-        cmd: npm install --no-audit
-        chdir: angular
+      npm:
+        path: ./angular
     - name: Install npm angular
       become: yes
-      shell: npm install -g --no-audit @angular/cli@11.2.11
+      npm:
+        name: '@angular/cli'
+        version: '11.2.11'
+        global: yes
     # Build angular
     - name: Build frontend
       become: yes
