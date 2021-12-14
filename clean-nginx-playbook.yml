@@ -8,3 +8,22 @@
         state: absent
         purge: yes
         autoremove: yes
+    - name: Uninstall nginx-common
+      become: yes
+      apt:
+        name: nginx-common
+        state: absent
+        purge: yes
+        autoremove: yes
+    - name: Uninstall nginx-core
+      become: yes
+      apt:
+        name: nginx-core
+        state: absent
+        purge: yes
+        autoremove: yes
+    - name: Remove /etc/nginx
+      become: yes
+      file:
+        path: /etc/nginx
+        state: absent
