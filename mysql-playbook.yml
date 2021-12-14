@@ -1,6 +1,15 @@
 - hosts: all
   become: no
   tasks:
+    - name: Install Python dependencies
+      become: yes
+      apt:
+        name: python3-pip
+        state: latest
+    - name: Install PyMySQL module
+      become: yes
+      pip:
+        name: pymysql
     - name: Install mysql
       become: yes
       apt:
@@ -27,33 +36,32 @@
       get_url:
         url: https://raw.githubusercontent.com/spring-petclinic/spring-petclinic-rest/29287912f1976ec01fc364e99a5798d6d8a3d6c7/src/main/resources/db/mysql/initDB.sql
         dest: .
-    - name: Change mysql init script user data privileges
+        force: yes
+    - name: Remove default user creation from mysql init script
       lineinfile:
         path: ./initDB.sql
         regexp: "^GRANT "
-        line: "GRANT ALL PRIVILEGES ON petclinic.* TO '{{ db_user }}'@'%';"
+        state: absent
     - name: Change mysql init script db name
       replace:
         path: ./initDB.sql
         regexp: 'petclinic'
         replace: '{{ db_name }}'
-    - name: Add mysql init script privilege flushing
-      lineinfile:
-        path: ./initDB.sql
-        insertbefore: "^GRANT "
-        line: "FLUSH PRIVILEGES;"
-    - name: Add mysql init script user creation command
-      lineinfile:
-        path: ./initDB.sql
-        insertbefore: "^GRANT "
-        line: "CREATE USER IF NOT EXISTS '{{ db_user }}' IDENTIFIED BY '{{ db_pass }}';"
     - name: Execute mysql init script
       become: yes
       shell: cat ./initDB.sql | mysql
+    - name: Create db user
+      become: yes
+      mysql_user:
+        name: '{{ db_user }}'
+        password: '{{ db_pass }}'
+        priv: '{{ db_name }}.*:ALL'
+        login_unix_socket: /var/run/mysqld/mysqld.sock
     - name: Download mysql data script
       get_url:
         url: https://raw.githubusercontent.com/spring-petclinic/spring-petclinic-rest/29287912f1976ec01fc364e99a5798d6d8a3d6c7/src/main/resources/db/mysql/populateDB.sql
         dest: .
+        force: yes
     - name: Execute mysql data script
       become: yes
       shell: 'cat ./populateDB.sql | mysql {{ db_name }}'
