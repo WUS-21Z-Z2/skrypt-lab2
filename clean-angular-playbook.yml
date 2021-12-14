@@ -8,10 +8,15 @@
         name: nginx
         state: stopped
     # Remove angular dir
-    - name: Remove petclinic angular directory
+    - name: Remove cloned angular directory
       become: yes
       file:
         dest: angular
+        state: absent
+    - name: Remove built (static) angular-petclinic files
+      become: yes
+      file:
+        dest: /var/www/html/petclinic
         state: absent
     # Uninstall nginx, git, npm, nodejs
     - name: Uninstall nginx, git, npm, nodejs
