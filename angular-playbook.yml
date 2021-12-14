@@ -1,0 +1,63 @@
+- hosts: all
+  become: no
+  tasks:
+    # Git and Nginx
+    - name: Install git, nginx
+      become: yes
+      apt:
+        name:
+          - git
+          - nginx
+        update_cache: yes
+    # Download repo
+    - name: Download frontend from repository
+      become: no
+      git:
+        dest: angular
+        repo: https://github.com/spring-petclinic/spring-petclinic-angular.git
+        clone: yes
+        force: yes
+    # NodeJS and NPM
+    - name: Update nodejs information
+      become: yes
+      shell:
+        cmd: curl -sL https://deb.nodesource.com/setup_16.x | bash -
+        warn: false
+    - name: Install nodejs, npm
+      become: yes
+      apt:
+        name:
+          - nodejs
+    - name: Install npm packages
+      become: yes
+      shell:
+        cmd: npm install --no-audit
+        chdir: angular
+    - name: Install npm angular
+      become: yes
+      shell: npm install -g --no-audit @angular/cli
+    # Build angular
+    - name: Build frontend
+      become: no
+      shell:
+        cmd: ng build --prod --base-href=/petclinic/ --deploy-url=/petclinic/
+        chdir: angular
+    # Setup Nginx
+    - name: Configure nginx proxy port 1/2
+      become: yes
+      lineinfile:
+        path: /etc/nginx/sites-enabled/default
+        regexp: '^\s*listen\s*80'
+        line: 'listen {{ angular_port }};'
+    - name: Configure nginx proxy port 2/2
+      become: yes
+      lineinfile:
+        path: /etc/nginx/sites-enabled/default
+        regexp: '^\s*listen\s*\[::\]:80'
+        line: 'listen [::]:{{ angular_port }};'
+    # Run
+    - name: Restart nginx
+      become: yes
+      service:
+        name: nginx
+        state: restart

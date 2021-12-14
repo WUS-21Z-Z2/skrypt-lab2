@@ -9,5 +9,6 @@ all:
         rest_read_port: 7777
         rest_write_name: 0.0.0.0
         rest_write_port: 7776
+        angular_port: 8080
         nginx_name: 34.116.219.139
         nginx_port: 11001
