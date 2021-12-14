@@ -21,13 +21,13 @@
       become: yes
       lineinfile:
         path: /etc/nginx/sites-enabled/default
-        regexp: '^\s*listen\s*80'
+        regexp: '^\s*listen\s*80;'
         line: 'listen {{ nginx_port }}'
     - name: Configure nginx proxy port 2/2
       become: yes
       lineinfile:
         path: /etc/nginx/sites-enabled/default
-        regexp: '^\s*listen\s*\[::\]:80'
+        regexp: '^\s*listen\s*\[::\]:80;'
         line: 'listen [::]:{{ nginx_port }}'
     - name: Configure nginx proxy location
       become: yes
@@ -46,3 +46,6 @@
               default {{rest_write_name}}:{{rest_write_port}};
           }
         marker: "#MAPPING BLOCK {mark}"
+    - name: Reload nginx
+      become: yes
+      shell: 'nginx -s reload'
