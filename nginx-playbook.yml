@@ -11,11 +11,11 @@
       blockinfile:
         path: /etc/nginx/nginx.conf
         insertafter: '^\s*http \{\s*'
-        block: "
-        upstream wus {
-          server {{rest_read_name}};
-          server {{rest_write_name}};
-        }"
+        block: |
+          upstream wus {
+            server {{rest_read_name}};
+            server {{rest_write_name}};
+          }
         marker: "#UPSTREAM BLOCK {mark}"
     - name: Configure nginx proxy port 1/2
       become: yes
@@ -40,9 +40,9 @@
       blockinfile:
         path: /etc/nginx/nginx.conf
         insertafter: EOF
-        block: "
-        map $request_method $rest_api_host {
-            GET     {{rest_read_name}}:{{rest_read_port}};
-            default {{rest_write_name}}:{{rest_write_port}};
-        }"
+        block: |
+          map $request_method $rest_api_host {
+              GET     {{rest_read_name}}:{{rest_read_port}};
+              default {{rest_write_name}}:{{rest_write_port}};
+          }
         marker: "#MAPPING BLOCK {mark}"
