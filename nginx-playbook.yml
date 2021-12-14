@@ -13,8 +13,8 @@
         insertafter: '^\s*http \{\s*'
         block: |
           upstream wus {
-            server {{rest_read_name}};
-            server {{rest_write_name}};
+            server {{rest_read_host}};
+            server {{rest_write_host}};
           }
         marker: "#UPSTREAM BLOCK {mark}"
     - name: Configure nginx proxy port 1/2
@@ -34,7 +34,7 @@
       lineinfile:
         path: /etc/nginx/sites-enabled/default
         regexp: '^\s*try_files\s*'
-        line: 'proxy_pass http://{{ nginx_name }};'
+        line: 'proxy_pass http://{{ nginx_host }};'
     - name: Configure nginx upstream
       become: yes
       blockinfile:
@@ -42,8 +42,8 @@
         insertafter: EOF
         block: |
           map $request_method $rest_api_host {
-              GET     {{rest_read_name}}:{{rest_read_port}};
-              default {{rest_write_name}}:{{rest_write_port}};
+              GET     {{rest_read_host}}:{{rest_read_port}};
+              default {{rest_write_host}}:{{rest_write_port}};
           }
         marker: "#MAPPING BLOCK {mark}"
     - name: Reload nginx
