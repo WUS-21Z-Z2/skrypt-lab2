@@ -56,13 +56,13 @@ get_machines "heroic-oarlock-329616" machines
 
 if [ "$1" == '--list' ]
 then
-    echo -n '{ "_meta": { "hostvars": '
+    echo -n '{ "_meta": { "hostvars": { '
     use_comma=""
     for i in $(seq 1 ${machines[count]})
     do
         if [[ "${machines["$i,external_ip"]}" != "" ]]
         then
-            echo -n "${use_comma:+, }{ \"${machines["$i,name"]}\": { \"ansible_host\": \"${machines["$i,external_ip"]}\" }"
+            echo -n "${use_comma:+, }\"${machines["$i,name"]}\": { \"ansible_host\": \"${machines["$i,external_ip"]}\" }"
             use_comma="true"
         fi
     done
