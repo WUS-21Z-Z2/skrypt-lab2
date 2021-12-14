@@ -1,0 +1,27 @@
+- hosts: all
+  become: no
+  tasks:
+    # Turn off nginx
+    - name: Turn off nginx
+      become: yes
+      service:
+        name: nginx
+        state: stopped
+    # Remove angular dir
+    - name: Remove petclinic angular directory
+      become: yes
+      file:
+        dest: angular
+        state: absent
+    # Uninstall nginx, git, npm, nodejs
+    - name: Uninstall nginx, git, npm, nodejs
+      become: yes
+      apt:
+        name:
+          - nginx
+          - git
+          - npm
+          - nodejs
+        state: absent
+        purge: yes
+        autoremove: yes
