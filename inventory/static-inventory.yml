@@ -5,3 +5,9 @@ all:
         db_name: petclinic
         db_port: 30603
         rest_port: 6699
+        rest_read_name: chuj
+        rest_read_port: 7777
+        rest_write_name: chuj2
+        rest_write_port: 7776
+        nginx_name: 34.116.219.139
+        nginx_port: 11001

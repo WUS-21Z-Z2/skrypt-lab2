@@ -7,40 +7,42 @@
         name: nginx
         state: latest
     - name: Configure nginx upstream
+      become: yes
       blockinfile:
         path: /etc/nginx/nginx.conf
         insertafter: '^\s*http \{\s*'
         block: "
         upstream wus {
-          server {{rest_read_hostname}};
-          server {{rest_write_hostname}};
+          server {{rest_read_name}};
+          server {{rest_write_name}};
         }"
-        marker: "#UPSTREAM BLOCK {marker}"
+        marker: "#UPSTREAM BLOCK {mark}"
     - name: Configure nginx proxy port 1/2
-      become: no
+      become: yes
       lineinfile:
         path: /etc/nginx/sites-enabled/default
         regexp: '^\s*listen\s*80'
         line: 'listen {{ nginx_port }}'
     - name: Configure nginx proxy port 2/2
-      become: no
+      become: yes
       lineinfile:
         path: /etc/nginx/sites-enabled/default
         regexp: '^\s*listen\s*\[::\]:80'
         line: 'listen [::]:{{ nginx_port }}'
     - name: Configure nginx proxy location
-      become: no
+      become: yes
       lineinfile:
         path: /etc/nginx/sites-enabled/default
         regexp: '^\s*try_files\s*'
-        line: 'proxy_pass http://{{ nginx_hostname }}'
+        line: 'proxy_pass http://{{ nginx_name }}'
     - name: Configure nginx upstream
+      become: yes
       blockinfile:
         path: /etc/nginx/nginx.conf
         insertafter: EOF
         block: "
         map $request_method $rest_api_host {
-            GET     {{rest_read_hostname}}:{{rest_read_port}};
-            default {{rest_write_hostname}}:{{rest_write_port}};
+            GET     {{rest_read_name}}:{{rest_read_port}};
+            default {{rest_write_name}}:{{rest_write_port}};
         }"
-        marker: "#MAPPING BLOCK {marker}"
+        marker: "#MAPPING BLOCK {mark}"
