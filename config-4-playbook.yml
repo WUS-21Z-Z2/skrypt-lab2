@@ -10,7 +10,7 @@
   import_playbook: mysql-playbook.yml
   vars:
     machine: '{{ mysql_slave }}'
-    mysql_instance_type: 'master'
+    mysql_instance_type: 'slave'
 - name: REST Write
   import_playbook: rest-playbook-2.yml
   vars:
