@@ -4,6 +4,7 @@
     # Turn off nginx
     - name: Turn off nginx
       become: yes
+      ignore_errors: yes
       service:
         name: nginx
         state: stopped

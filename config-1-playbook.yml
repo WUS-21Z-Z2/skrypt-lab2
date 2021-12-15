@@ -5,6 +5,8 @@
   import_playbook: mysql-playbook.yml
   vars:
     machine: '{{ mysql_master }}'
+    mysql_port: '{{ mysql_master_port }}'
+    mysql_instance_type: master
 - name: REST
   import_playbook: rest-playbook.yml
   vars:

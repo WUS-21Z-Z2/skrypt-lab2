@@ -1,7 +1,10 @@
 - hosts: "{{ machine }}"
   vars:
-    #mysql_port: '{{ mysql_master_port }}'
-#    mysql_instance_type: master
+    # mysql_master_host
+    # mysql_slave_host
+    # mysql_port
+    # mysql_instance_type
+    mysql_instance_id: "{% if mysql_instance_type == 'slave' and mysql_master_host == mysql_slave_host %}2{% endif %}"
   become: no
   tasks:
     - name: Install Python dependencies
@@ -19,15 +22,8 @@
       apt:
         name: mysql-server
         state: latest
-    - name: Check if the first instance is already taken
-      become: yes
-      shell: "grep -qs '# Provided by Ansible' /etc/mysql/my.cnf && echo 'true' || echo 'false'"
-      register: is_1st_taken
-    - name: Set mysql_instance_id depending on context
-      set_fact:
-        mysql_instance_id: "{% if is_1st_taken.stdout == 'true' %}2{% endif %}"
     - name: Run instance-dependent tasks
-      include_tasks: 'mysql-tasks{{ mysql_instance_id }}.yml'
+      import_tasks: 'mysql-tasks{{ mysql_instance_id }}.yml'
     - name: Download mysql init script
       get_url:
         url: https://raw.githubusercontent.com/spring-petclinic/spring-petclinic-rest/29287912f1976ec01fc364e99a5798d6d8a3d6c7/src/main/resources/db/mysql/initDB.sql

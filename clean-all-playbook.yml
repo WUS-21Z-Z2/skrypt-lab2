@@ -1,0 +1,11 @@
+- hosts: all
+  tasks:
+
+- name: Clean angular
+  import_playbook: clean-angular-playbook.yml
+- name: Clean load balancer
+  import_playbook: clean-nginx-playbook.yml
+- name: Clean REST
+  import_playbook: clean-rest-playbook.yml
+- name: Clean mysql
+  import_playbook: clean-mysql-playbook.yml
