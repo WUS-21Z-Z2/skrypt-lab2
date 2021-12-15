@@ -19,7 +19,7 @@ angular=spring-petclinic-angular \
 angular_port=8998"
 
 ## CONFIG 4
-ansible-playbook config-3-playbook.yml -e \
+ansible-playbook config-4-playbook.yml -e \
 "mysql_master=mysql-petclinic-slave \
 mysql_master_port=30703 \
 mysql_slave=mysql-petclinic-slave \
@@ -29,6 +29,6 @@ rest_write_port=7776 \
 rest_read=nginx-load-balancer \
 rest_read_port=7775 \
 load_balancer=spring-petclinic-angular \
-load_balancer_port=8008"
+load_balancer_port=8008
 angular=spring-petclinic-angular \
 angular_port=8998"

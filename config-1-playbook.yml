@@ -11,6 +11,8 @@
   import_playbook: rest-playbook.yml
   vars:
     machine: '{{ rest_write }}'
+    mysql_host: '{{ mysql_master_host }}'
+    mysql_port: '{{ mysql_master_port }}'
     rest_host: '{{ rest_write_host }}'
     rest_port: '{{ rest_write_port }}'
 - name: Angular

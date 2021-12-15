@@ -80,6 +80,7 @@
   become: yes
   shell: 'nohup mysqld_safe --defaults-file=/etc/mysql/my{{ mysql_instance_id }}.cnf > mysqld_safe-`date -Iseconds`.out &'
 - name: Change root password
+  ignore_errors: yes
   shell: >
     mysql -uroot -p'{{ mysql_tmp_root_pass.stdout }}' -S /var/run/mysqld/mysqld{{ mysql_instance_id }}.sock \
       -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_root_pass }}';" \
