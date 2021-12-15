@@ -33,6 +33,12 @@
       apt:
         name: nodejs
         state: latest
+    - name: Update npm
+      become: yes
+      npm:
+        name: 'npm'
+        state: latest
+        global: yes
     - name: Install npm packages
       npm:
         path: ./angular

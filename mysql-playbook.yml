@@ -1,8 +1,7 @@
 - hosts: "{{ machine }}"
   vars:
-    mysql_instance_id: 2
-    mysql_port: '{{ mysql_master_port }}'
-    mysql_instance_type: master
+    #mysql_port: '{{ mysql_master_port }}'
+#    mysql_instance_type: master
   become: no
   tasks:
     - name: Install Python dependencies
@@ -20,7 +19,15 @@
       apt:
         name: mysql-server
         state: latest
-    - import_tasks: mysql-tasks-second.yml
+    - name: Check if the first instance is already taken
+      become: yes
+      shell: "grep -qs '# Provided by Ansible' /etc/mysql/my.cnf && echo 'true' || echo 'false'"
+      register: is_1st_taken
+    - name: Set mysql_instance_id depending on context
+      set_fact:
+        mysql_instance_id: "{% if is_1st_taken.stdout == 'true' %}2{% endif %}"
+    - name: Run instance-dependent tasks
+      include_tasks: 'mysql-tasks{{ mysql_instance_id }}.yml'
     - name: Download mysql init script
       get_url:
         url: https://raw.githubusercontent.com/spring-petclinic/spring-petclinic-rest/29287912f1976ec01fc364e99a5798d6d8a3d6c7/src/main/resources/db/mysql/initDB.sql
@@ -44,7 +51,7 @@
         name: '{{ mysql_user }}'
         host: '%'
         password: '{{ mysql_pass }}'
-        priv: '{{ mysql_name }}.*:ALL'
+        priv: '{{ mysql_name }}.*:ALL/*.*:REPLICATION CLIENT'
         login_user: root
         login_password: '{{ mysql_root_pass }}'
         login_unix_socket: '/var/run/mysqld/mysqld{{ mysql_instance_id }}.sock'
@@ -56,3 +63,39 @@
     - name: Execute mysql data script
       become: yes
       shell: "cat ./populateDB.sql | mysql -uroot -p'{{ mysql_root_pass }}' -S'/var/run/mysqld/mysqld{{ mysql_instance_id }}.sock' {{ mysql_name }}"
+    - name: Get replication master data
+      when: mysql_instance_type == 'slave'
+      become: yes
+      mysql_replication:
+        mode: getmaster
+        login_user: pc
+        login_password: pc
+        login_host: '{{ mysql_master_host }}'
+        login_port: '{{ mysql_master_port }}'
+      register: master_data
+    - name: Print master data
+      when: mysql_instance_type == 'slave'
+      debug:
+        msg: "Data: {{ master_data }}"
+    - name: Make instance replication slave
+      when: mysql_instance_type == 'slave'
+      become: yes
+      mysql_replication:
+        mode: changemaster
+        master_host: '{{ mysql_master_host }}'
+        master_port: '{{ mysql_master_port }}'
+        master_user: '{{ mysql_user }}'
+        master_password: '{{ mysql_pass }}'
+        master_log_file: '{{ master_data.File }}'
+        master_log_pos: '{{ master_data.Position }}'
+        login_user: root
+        login_password: '{{ mysql_root_pass }}'
+        login_unix_socket: '/var/run/mysqld/mysqld2.sock'
+    - name: Start replication slave
+      when: mysql_instance_type == 'slave'
+      become: yes
+      mysql_replication:
+        mode: startslave
+        login_user: root
+        login_password: '{{ mysql_root_pass }}'
+        login_unix_socket: '/var/run/mysqld/mysqld2.sock'

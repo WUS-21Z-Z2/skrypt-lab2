@@ -1,0 +1,34 @@
+---
+- name: Create mysql config file from template
+  become: yes
+  template:
+    src: ./sent_config/mysqld.cnf.j2
+    dest: /etc/mysql/my{{ mysql_instance_id }}.cnf
+    owner: mysql
+    group: mysql
+- name: Kill mysql process
+  become: yes
+  ignore_errors: yes
+  shell: "cat /var/run/mysqld/mysqld.pid | xargs kill"
+- name: Prepare init script
+  become: yes
+  shell: "echo \"ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_root_pass }}';\" > /etc/mysql/root_init.sql"
+- name: Rerun mysql server with changed root password
+  shell: "nohup mysqld --init-script=/etc/mysql/root_init.sql > mysqld-`date -Iseconds`.out &"
+- name: Wait
+  wait_for:
+    timeout: 2
+- name:
+  become: yes
+  ignore_errors: yes
+  shell: "pgrep mysql | xargs kill"
+- name: Remove init script
+  become: yes
+  file:
+    path: /etc/mysql/root_init.sql
+    state: absent
+- name: Start mysql server
+  become: yes
+  service:
+    name: mysql
+    state: started

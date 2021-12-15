@@ -6,6 +6,7 @@
       apt:
         name: nginx
         state: latest
+        update_cache: yes
     - name: Remove default nginx config
       become: yes
       file:
