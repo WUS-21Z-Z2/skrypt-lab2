@@ -1,0 +1,17 @@
+map $request_method $rest_api_host {
+	GET     {{ rest_read_host }}:{{ rest_read_port }};
+	default {{ rest_write_host }}:{{ rest_write_port }};
+}
+
+server {
+	listen {{ load_balancer_port }} default_server;
+	listen [::]:{{ load_balancer_port }} default_server;
+
+	root /var/www/html;
+	index index.html index.htm index.nginx-debian.html;
+	server_name _;
+
+	location / {
+		proxy_pass http://$rest_api_host;
+	}
+}

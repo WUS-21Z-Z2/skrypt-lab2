@@ -49,18 +49,16 @@
         cmd: ng build --prod --base-href=/petclinic/ --output-path=/var/www/html/petclinic/
         chdir: angular
     # Setup Nginx
-    - name: Configure nginx proxy port 1/2
+    - name: Remove default nginx config
       become: yes
-      lineinfile:
+      file:
         path: /etc/nginx/sites-enabled/default
-        regexp: '^\s*listen\s*80'
-        line: 'listen {{ angular_port }};'
-    - name: Configure nginx proxy port 2/2
+        state: absent
+    - name: Upload nginx angular config
       become: yes
-      lineinfile:
-        path: /etc/nginx/sites-enabled/default
-        regexp: '^\s*listen\s*\[::\]:80'
-        line: 'listen [::]:{{ angular_port }};'
+      template:
+        src: ./sent_config/nginx-angular.conf.j2
+        dest: /etc/nginx/sites-enabled/nginx-angular.conf
     # Run
     - name: Restart nginx
       become: yes
