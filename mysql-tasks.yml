@@ -9,7 +9,7 @@
 - name: Kill mysql process
   become: yes
   ignore_errors: yes
-  shell: "cat /var/run/mysqld/mysqld.pid | xargs kill"
+  shell: "cat /var/run/mysqld/mysqld.pid | xargs kill 2> /dev/null"
 - name: Prepare init script
   become: yes
   shell: "echo \"ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_root_pass }}';\" > /etc/mysql/root_init.sql"

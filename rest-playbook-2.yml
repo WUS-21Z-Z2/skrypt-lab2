@@ -33,9 +33,10 @@
       ignore_errors: true
       command:
         cmd: 'lsof -Pti :{{ rest_port }} -sTCP:LISTEN'
-    - name: Kill process occupying needed port (what could possibly go wrong)
+    - name: Kill process occupying needed port
       when: busy_port is succeeded
-      command: 'kill {{ busy_port.stdout }}'
+      ignore_errors: yes
+      shell: 'kill {{ busy_port.stdout }} 2>/dev/null'
     - name: Run REST
       shell: >
         nohup java -jar ./rest/target/spring-petclinic-rest-2.4.2.jar --server.port={{ rest_port }} \
