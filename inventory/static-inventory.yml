@@ -1,17 +1,19 @@
 all:
     vars:
-        mysql_master_host: 127.0.0.1
+        mysql_master_host: "{{ hostvars[mysql]['ansible_host'] }}"
         mysql_master_port: 30603
-        mysql_slave_host: 127.0.0.1
+        mysql_slave_host: "{{ hostvars[mysql]['ansible_host'] }}"
         mysql_slave_port: 30604
         mysql_user: pc
         mysql_pass: pc
         mysql_name: petclinic
         mysql_root_pass: balbinka
+
         rest_read_host: 0.0.0.0
         rest_read_port: 7777
         rest_write_host: 0.0.0.0
         rest_write_port: 7776
+
         load_balancer_host: 34.116.222.89
         load_balancer_port: 7776
         angular_port: 8080

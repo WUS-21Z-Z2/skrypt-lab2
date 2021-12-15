@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: "{{ machine }}"
   vars:
     mysql_instance_id: 2
     mysql_port: '{{ mysql_master_port }}'

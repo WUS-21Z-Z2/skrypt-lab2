@@ -1,0 +1,1 @@
+ansible-playbook config-1-playbook.yml -e "mysql=nginx-load-balancer rest=nginx-load-balancer angular=nginx-load-balancer" --start-at-task='Run REST'

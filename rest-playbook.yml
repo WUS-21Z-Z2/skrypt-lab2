@@ -1,5 +1,7 @@
-- hosts: all
+- hosts: "{{ machine }}"
   vars:
+    mysql_port: '{{ mysql_master_port }}'
+    mysql_host: '{{ mysql_master_host }}'
     rest_host: '{{ rest_write_host }}'
     rest_port: '{{ rest_write_port }}'
   become: no
@@ -34,8 +36,7 @@
         cmd: 'lsof -Pti :{{ rest_port }} -sTCP:LISTEN'
     - name: Kill process occupying needed port (what could possibly go wrong)
       when: busy_port is succeeded
-      command:
-        cmd: 'kill {{ busy_port.stdout }}'
+      command: 'kill {{ busy_port.stdout }}'
     - name: Run REST
       shell: >
         nohup java -jar ./rest/target/spring-petclinic-rest-2.4.2.jar --server.port={{ rest_port }} \
