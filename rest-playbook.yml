@@ -11,6 +11,7 @@
       apt:
         name: git
         state: latest
+        update_cache: yes
     - name: Install JDK
       become: yes
       apt:

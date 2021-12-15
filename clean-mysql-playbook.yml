@@ -4,7 +4,7 @@
     - name: Kill all active mysql processes
       become: yes
       ignore_errors: yes
-      shell: 'pgrep | xargs kill' 
+      shell: 'pgrep mysql | xargs kill' 
     - name: Remove mysql
       become: yes
       apt:

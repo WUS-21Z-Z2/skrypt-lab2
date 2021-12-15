@@ -4,11 +4,11 @@
 - name: MySQL
   import_playbook: mysql-playbook.yml
   vars:
-    machine: '{{ mysql }}'
+    machine: '{{ mysql_master }}'
 - name: REST
   import_playbook: rest-playbook.yml
   vars:
-    machine: '{{ rest }}'
+    machine: '{{ rest_write }}'
 - name: Angular
   import_playbook: angular-playbook.yml
   vars:
