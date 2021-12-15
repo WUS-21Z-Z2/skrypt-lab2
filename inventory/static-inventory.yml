@@ -2,7 +2,7 @@ all:
     vars:
         mysql_master_host: "{{ hostvars[mysql_master]['ansible_host'] }}"
         mysql_master_port: 30603 #
-        mysql_slave_host: "{{ hostvars[mysql_slave]['ansible_host'] }}"
+        mysql_slave_host: "{{ hostvars[mysql_slave | default(mysql_master)]['ansible_host'] }}"
         mysql_slave_port: 30604 #
         mysql_user: pc
         mysql_pass: pc

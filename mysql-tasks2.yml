@@ -64,6 +64,7 @@
     state: restarted
 - name: Initialize data dir for the new instance
   become: yes
+  ignore_errors: yes
   command: 'mysqld --initialize --user=mysql --datadir=/var/lib/mysql{{ mysql_instance_id }}/'
 - name: Retrieve temporary password from log file
   shell: "grep 'temporary password' /var/log/mysql/error.log | tail -n 1 | awk '{print $NF}'"

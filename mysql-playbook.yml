@@ -1,6 +1,7 @@
 - hosts: "{{ machine }}"
   vars:
     # mysql_master_host
+    # mysql_master_port
     # mysql_slave_host
     # mysql_port
     # mysql_instance_type
@@ -23,7 +24,7 @@
         name: mysql-server
         state: latest
     - name: Run instance-dependent tasks
-      import_tasks: 'mysql-tasks{{ mysql_instance_id }}.yml'
+      include_tasks: 'mysql-tasks{{ mysql_instance_id }}.yml'
     - name: Download mysql init script
       get_url:
         url: https://raw.githubusercontent.com/spring-petclinic/spring-petclinic-rest/29287912f1976ec01fc364e99a5798d6d8a3d6c7/src/main/resources/db/mysql/initDB.sql
@@ -40,6 +41,7 @@
         regexp: 'petclinic'
         replace: '{{ mysql_name }}'
     - name: Execute mysql init script
+      become: yes
       shell: "cat ./initDB.sql | mysql -uroot -p'{{ mysql_root_pass }}' -S'/var/run/mysqld/mysqld{{ mysql_instance_id }}.sock'"
     - name: Create db user
       become: yes
