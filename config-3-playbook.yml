@@ -1,0 +1,21 @@
+- hosts: ungrouped[0]
+  tasks:
+
+- name: MySQL Master
+  import_playbook: mysql-playbook.yml
+  vars:
+    machine: '{{ mysql_master }}'
+    mysql_instance_type: 'master'
+- name: MySQL Slave
+  import_playbook: mysql-playbook.yml
+  vars:
+    machine: '{{ mysql_slave }}'
+    mysql_instance_type: 'master'
+- name: REST
+  import_playbook: rest-playbook-2.yml
+  vars:
+    machine: '{{ rest_write }}'
+- name: Angular
+  import_playbook: angular-playbook.yml
+  vars:
+    machine: '{{ angular }}'

@@ -9,11 +9,12 @@ all:
         mysql_name: petclinic
         mysql_root_pass: balbinka
 
-        rest_read_host: "{{ hostvars[rest_read]['ansible_host'] }}"
-        rest_read_port: 7777 #
         rest_write_host: "{{ hostvars[rest_write]['ansible_host'] }}"
         rest_write_port: 7776 #
+        rest_read_host: "{{ hostvars[rest_read | default(rest_write)]['ansible_host'] }}"
+        rest_read_port: 7777 #
 
         load_balancer_host: "{{ hostvars[load_balancer | default(rest_write)]['ansible_host'] }}"
         load_balancer_port: "{{ rest_write_port }}"
+
         angular_port: 8080 #
