@@ -1,0 +1,21 @@
+---
+- name: Create mysql config file from template
+  become: yes
+  template:
+    src: ./sent_config/mysqld.cnf.j2
+    dest: /etc/mysql/my{{ mysql_instance_id }}.cnf
+    owner: mysql
+    group: mysql
+- name: Reload mysql configuration
+  become: yes
+  service:
+    name: mysql
+    state: reloaded
+- name: Change root password
+  become: yes
+  mysql_user:
+    name: root
+    password: '{{ mysql_root_pass }}'
+    login_user: root
+    login_password: '{{ mysql_tmp_root_pass }}'
+    login_unix_socket: '/var/run/mysqld/mysqld{{ mysql_instance_id }}.sock'

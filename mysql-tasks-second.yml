@@ -1,0 +1,85 @@
+---
+- name: Create data directory for additional mysql instance
+  become: yes
+  file:
+    path: '/var/lib/mysql{{ mysql_instance_id }}'
+    state: directory
+    owner: mysql
+    group: mysql
+- name: Create log directory for additional mysql instance
+  become: yes
+  file:
+    path: '/var/log/mysql{{ mysql_instance_id }}'
+    state: directory
+    owner: mysql
+    group: mysql
+- name: Prepare writable log files for mysql instance 1/3
+  become: yes
+  file:
+    path: '/var/log/mysql{{ mysql_instance_id }}/error.log'
+    state: touch
+    owner: mysql
+    group: mysql
+- name: Prepare writable log files for mysql instance 2/3
+  become: yes
+  file:
+    path: '/var/log/mysql{{ mysql_instance_id }}/mysql-bin.log'
+    state: touch
+    owner: mysql
+    group: mysql
+- name: Prepare writable log files for mysql instance 3/3
+  become: yes
+  file:
+    path: '/var/log/mysql{{ mysql_instance_id }}/mysql-relay-bin.log'
+    state: touch
+    owner: mysql
+    group: mysql
+- name: Ensure that directory storing socket file of mysql instance exists
+  become: yes
+  file:
+    path: '/var/run/mysqld'
+    state: directory
+    owner: mysql
+    group: mysql
+- name: Add AppArmor exceptions for the new instance
+  become: yes
+  blockinfile:
+    path: /etc/apparmor.d/usr.sbin.mysqld
+    insertbefore: '^}'
+    block: |
+      /var/lib/mysql{{ mysql_instance_id }}/ r,
+      /var/lib/mysql{{ mysql_instance_id }}/** rwk,
+      /var/run/mysqld/mysqld{{ mysql_instance_id }}.pid rw,
+      /var/run/mysqld/mysqld{{ mysql_instance_id }}.sock rw,
+      /var/run/mysqld/mysqld{{ mysql_instance_id }}.sock.lock rw,
+      /run/mysqld/mysqld{{ mysql_instance_id }}.pid rw,
+      /run/mysqld/mysqld{{ mysql_instance_id }}.sock rw,
+      /run/mysqld/mysqld{{ mysql_instance_id }}.sock.lock rw,
+      /var/log/mysql{{ mysql_instance_id }}/ r,
+      /var/log/mysql{{ mysql_instance_id }}/** rw,
+- name: Restart AppArmor service
+  become: yes
+  service:
+    name: apparmor
+    state: restarted
+- name: Initialize data dir for the new instance
+  become: yes
+  command: 'mysqld --initialize --user=mysql --datadir=/var/lib/mysql{{ mysql_instance_id }}/'
+- name: Retrieve temporary password from log file
+  shell: "grep 'temporary password' /var/log/mysql/error.log | tail -n 1 | awk '{print $NF}'"
+  register: mysql_tmp_root_pass
+- name: Create mysql config file from template
+  become: yes
+  template:
+    src: ./sent_config/mysqld.cnf.j2
+    dest: /etc/mysql/my{{ mysql_instance_id }}.cnf
+    owner: mysql
+    group: mysql
+- name: Start mysql instance using mysqld_safe
+  become: yes
+  shell: 'nohup mysqld_safe --defaults-file=/etc/mysql/my{{ mysql_instance_id }}.cnf > mysqld_safe-`date -Iseconds`.out &'
+- name: Change root password
+  shell: >
+    mysql -uroot -p'{{ mysql_tmp_root_pass.stdout }}' -S /var/run/mysqld/mysqld{{ mysql_instance_id }}.sock \
+      -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_root_pass }}';" \
+      --connect-expired-password

@@ -1,13 +1,34 @@
 - hosts: all
   become: no
   tasks:
+    - name: Kill all active mysql processes
+      become: yes
+      ignore_errors: yes
+      shell: 'pgrep | xargs kill' 
     - name: Remove mysql
       become: yes
       apt:
-        name: mysql-server
+        name:
+        - 'mysql*'
+        - 'libmysql*'
         state: absent
         purge: yes
         autoremove: yes
+    - name: Make sure mysql config dir is no more
+      become: yes
+      file:
+        path: /etc/mysql
+        state: absent
+    - name: Remove datadir of the second instance
+      become: yes
+      file:
+        path: /var/lib/mysql2
+        state: absent
+    - name: Remove log dir of the second instance
+      become: yes
+      file:
+        path: /var/log/mysql2
+        state: absent
     - name: Remove mysql init script
       file:
         path: ./initDB.sql

@@ -1,4 +1,8 @@
 - hosts: all
+  vars:
+    mysql_instance_id: 2
+    mysql_port: '{{ mysql_master_port }}'
+    mysql_instance_type: master
   become: no
   tasks:
     - name: Install Python dependencies
@@ -15,23 +19,7 @@
       apt:
         name: mysql-server
         state: latest
-    - name: Configure mysql port
-      become: yes
-      lineinfile:
-        path: /etc/mysql/mysql.conf.d/mysqld.cnf
-        regexp: '^#?\s*port\s*='
-        line: 'port = {{ db_port }}'
-    - name: Configure mysql bind address
-      become: yes
-      lineinfile:
-        path: /etc/mysql/mysql.conf.d/mysqld.cnf
-        regexp: '^#?\s*bind-address\s*='
-        line: 'bind-address = 0.0.0.0'
-    - name: Restart mysql service
-      become: yes
-      service:
-        name: mysql
-        state: restarted
+    - import_tasks: mysql-tasks-second.yml
     - name: Download mysql init script
       get_url:
         url: https://raw.githubusercontent.com/spring-petclinic/spring-petclinic-rest/29287912f1976ec01fc364e99a5798d6d8a3d6c7/src/main/resources/db/mysql/initDB.sql
@@ -46,17 +34,19 @@
       replace:
         path: ./initDB.sql
         regexp: 'petclinic'
-        replace: '{{ db_name }}'
+        replace: '{{ mysql_name }}'
     - name: Execute mysql init script
-      become: yes
-      shell: cat ./initDB.sql | mysql
+      shell: "cat ./initDB.sql | mysql -uroot -p'{{ mysql_root_pass }}' -S'/var/run/mysqld/mysqld{{ mysql_instance_id }}.sock'"
     - name: Create db user
       become: yes
       mysql_user:
-        name: '{{ db_user }}'
-        password: '{{ db_pass }}'
-        priv: '{{ db_name }}.*:ALL'
-        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: '{{ mysql_user }}'
+        host: '%'
+        password: '{{ mysql_pass }}'
+        priv: '{{ mysql_name }}.*:ALL'
+        login_user: root
+        login_password: '{{ mysql_root_pass }}'
+        login_unix_socket: '/var/run/mysqld/mysqld{{ mysql_instance_id }}.sock'
     - name: Download mysql data script
       get_url:
         url: https://raw.githubusercontent.com/spring-petclinic/spring-petclinic-rest/29287912f1976ec01fc364e99a5798d6d8a3d6c7/src/main/resources/db/mysql/populateDB.sql
@@ -64,4 +54,4 @@
         force: yes
     - name: Execute mysql data script
       become: yes
-      shell: 'cat ./populateDB.sql | mysql {{ db_name }}'
+      shell: "cat ./populateDB.sql | mysql -uroot -p'{{ mysql_root_pass }}' -S'/var/run/mysqld/mysqld{{ mysql_instance_id }}.sock' {{ mysql_name }}"

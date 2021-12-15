@@ -1,0 +1,24 @@
+# Provided by Ansible
+[mysqld]
+user	  = mysql
+pid-file  = /var/run/mysqld/mysqld{{ mysql_instance_id }}.pid
+socket	  = /var/run/mysqld/mysqld{{ mysql_instance_id }}.sock
+datadir	  = /var/lib/mysql{{ mysql_instance_id }}
+log-error = /var/log/mysql{{ mysql_instance_id }}/error.log
+
+port         = {{ mysql_port }}
+bind-address = 0.0.0.0
+mysqlx	     = 0
+
+{% if mysql_instance_type == 'master' %}
+server-id     = 1
+log_bin       = /var/log/mysql{{ mysql_instance_id }}/mysql-bin.log
+binlog_format = MIXED
+binlog_do_db  = {{ mysql_name }}
+{% else %}
+server-id     = 2
+log_bin       = /var/log/mysql{{ mysql_instance_id }}/mysql-bin.log
+relay_log     = /var/log/mysql{{ mysql_instance_id }}/mysql-relay-bin.log
+binlog_do_db  = {{ mysql_name }}
+{% endif %}
+

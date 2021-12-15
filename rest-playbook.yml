@@ -1,4 +1,7 @@
 - hosts: all
+  vars:
+    rest_host: '{{ rest_write_host }}'
+    rest_port: '{{ rest_write_port }}'
   become: no
   tasks:
     - name: Install git
@@ -34,4 +37,8 @@
       command:
         cmd: 'kill {{ busy_port.stdout }}'
     - name: Run REST
-      shell: "nohup java -jar ./rest/target/spring-petclinic-rest-2.4.2.jar --server.port={{ rest_port }} --spring.profiles.active=mysql,spring-data-jpa --spring.datasource.url=jdbc:mysql://{{ db_user }}:{{ db_pass }}@{{ db_host | default('localhost') }}:{{ db_port }}/{{ db_name }}?useUnicode=true &"
+      shell: >
+        nohup java -jar ./rest/target/spring-petclinic-rest-2.4.2.jar --server.port={{ rest_port }} \
+          --spring.profiles.active=mysql,spring-data-jpa \
+          --spring.datasource.url=jdbc:mysql://{{ mysql_user }}:{{ mysql_pass }}@{{ mysql_host | default('localhost') }}:{{ mysql_port }}/{{ mysql_name }}?useUnicode=true \
+          > mysqld_safe-`date -Iseconds`.out &

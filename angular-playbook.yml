@@ -21,7 +21,7 @@
       lineinfile:
         dest: ./angular/src/environments/environment.prod.ts
         regexp: '^\s*REST_API_URL:'
-        line: "REST_API_URL: 'http://{{nginx_host}}:{{nginx_port}}/petclinic/api/'"
+        line: "REST_API_URL: 'http://{{ load_balancer_host }}:{{ load_balancer_port }}/petclinic/api/'"
     # NodeJS and NPM
     - name: Update nodejs information
       become: yes
